@@ -1,6 +1,6 @@
 # SpaceRP Windows launcher
 
-The launcher provides a Windows WPF shell with SE1 / SE2 selection, Steam library discovery, manual game-folder selection, and basic executable-presence validation.
+The launcher provides a Windows WPF shell with SE1 / SE2 selection, Steam library discovery, manual game-folder selection, executable-presence validation, and persistent manual installation paths.
 
 ## Detection and validation behavior
 
@@ -13,9 +13,15 @@ The launcher provides a Windows WPF shell with SE1 / SE2 selection, Steam librar
   - Space Engineers: `Bin64/SpaceEngineers.exe`, with `Bin/SpaceEngineers.exe` as a fallback.
   - Space Engineers 2: `Game2/SpaceEngineers2.exe`.
 - Enables **Continue** only when the expected executable file is present.
-- Manual selections are session-only; pressing **Rescan** replaces them with fresh Steam discovery results.
+- Saves manually selected folders in `%LOCALAPPDATA%/SpaceRP/launcher-settings.json`.
+- Restores saved manual folders on startup and rechecks the expected executable before marking them ready.
+- If a saved folder no longer exists, the launcher falls back to Steam discovery.
+- Pressing **Rescan** refreshes Steam discovery while retaining saved manual folder preferences.
+- If settings are unreadable or invalid, launcher startup continues with Steam discovery instead.
 - Executable presence is not a file-integrity check and does not prove that the game can start.
 - Does not sign in to Steam, verify ownership, launch a game, or connect to a SpaceRP server yet.
+
+The settings file contains local installation paths only; it does not contain Steam credentials or authentication tokens.
 
 The executable locations are based on the published Space Engineers troubleshooting guidance and Steam's launch configuration for Space Engineers 2.
 
