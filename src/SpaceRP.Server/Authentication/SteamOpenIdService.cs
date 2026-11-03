@@ -25,6 +25,10 @@ public sealed partial class SteamOpenIdService(IHttpClientFactory httpClientFact
     {
         var realm = RequireHttpsUri(options.Realm, nameof(options.Realm));
         var callback = RequireHttpsUri(options.CallbackUrl, nameof(options.CallbackUrl));
+        if (!string.Equals(callback.GetLeftPart(UriPartial.Authority), realm.GetLeftPart(UriPartial.Authority), StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Steam realm and callback must use the same HTTPS origin.");
+
+        PruneExpiredEntries();
         var state = WebEncoders.Base64UrlEncode(System.Security.Cryptography.RandomNumberGenerator.GetBytes(32));
         _pendingStates[state] = DateTimeOffset.UtcNow;
 
@@ -58,7 +62,8 @@ public sealed partial class SteamOpenIdService(IHttpClientFactory httpClientFact
         if (!string.Equals(returnedTo, expectedReturnTo, StringComparison.Ordinal))
             return null;
 
-        if (query["openid.ns"] != OpenIdNamespace || query["openid.mode"] != "id_res")
+        if (query["openid.ns"] != OpenIdNamespace || query["openid.mode"] != "id_res" ||
+            query["openid.op_endpoint"] != SteamEndpoint)
             return null;
 
         var claimedId = query["openid.claimed_id"].ToString();
@@ -97,6 +102,23 @@ public sealed partial class SteamOpenIdService(IHttpClientFactory httpClientFact
             return null;
 
         return match.Groups["steamId"].Value;
+    }
+
+    private void PruneExpiredEntries()
+    {
+        var cutoff = DateTimeOffset.UtcNow - StateLifetime;
+        foreach (var entry in _pendingStates)
+        {
+            if (entry.Value < cutoff)
+                _pendingStates.TryRemove(entry.Key, out _);
+        }
+
+        var nonceCutoff = DateTimeOffset.UtcNow - TimeSpan.FromMinutes(12);
+        foreach (var entry in _usedNonces)
+        {
+            if (entry.Value < nonceCutoff)
+                _usedNonces.TryRemove(entry.Key, out _);
+        }
     }
 
     private static Uri RequireHttpsUri(string value, string settingName)
