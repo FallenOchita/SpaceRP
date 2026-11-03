@@ -28,11 +28,16 @@ public sealed class SteamLibraryDiscovery
                 .Select(library => FindGamePath(library, game.AppId, game.Folder))
                 .FirstOrDefault(path => path is not null);
 
+            var installPath = foundPath ?? string.Empty;
+            var executablePath = GameInstallationValidator.FindGameExecutable(game.Name, installPath);
+
             results.Add(new GameInstallation(
                 game.Name,
                 game.AppId,
-                foundPath ?? string.Empty,
-                foundPath is not null));
+                installPath,
+                foundPath is not null,
+                executablePath ?? string.Empty,
+                executablePath is not null));
         }
 
         return results;

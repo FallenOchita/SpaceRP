@@ -41,9 +41,11 @@ public partial class MainWindow : Window
         var installation = _installations.FirstOrDefault(
             item => string.Equals(item.GameName, gameName, StringComparison.Ordinal));
 
-        target.Text = installation?.IsInstalled == true
-            ? "Installed · Ready to select"
-            : "Not detected · Browse for the game folder";
+        target.Text = installation?.HasGameExecutable == true
+            ? "Installed · Executable verified"
+            : installation?.IsInstalled == true
+                ? "Folder found · Game executable missing"
+                : "Not detected · Browse for the game folder";
     }
 
     private void SelectSe1_Click(object sender, RoutedEventArgs e) => SelectGame("Space Engineers");
@@ -90,7 +92,14 @@ public partial class MainWindow : Window
         }
 
         var appId = gameName == "Space Engineers" ? 244850u : 1133870u;
-        var manualInstallation = new GameInstallation(gameName, appId, selectedPath, true);
+        var executablePath = GameInstallationValidator.FindGameExecutable(gameName, selectedPath);
+        var manualInstallation = new GameInstallation(
+            gameName,
+            appId,
+            selectedPath,
+            true,
+            executablePath ?? string.Empty,
+            executablePath is not null);
         _installations = _installations
             .Where(item => !string.Equals(item.GameName, gameName, StringComparison.Ordinal))
             .Append(manualInstallation)
@@ -113,22 +122,24 @@ public partial class MainWindow : Window
         }
 
         SelectionStatus.Text = _selectedGame.GameName;
-        InstallPathStatus.Text = _selectedGame.IsInstalled
-            ? _selectedGame.InstallPath
-            : "This game was not found in the detected Steam libraries.";
-        ContinueButton.IsEnabled = _selectedGame.IsInstalled;
+        InstallPathStatus.Text = !_selectedGame.IsInstalled
+            ? "This game was not found in the detected Steam libraries."
+            : _selectedGame.HasGameExecutable
+                ? $"{_selectedGame.InstallPath}{Environment.NewLine}Executable: {_selectedGame.ExecutablePath}"
+                : $"{_selectedGame.InstallPath}{Environment.NewLine}Game executable not found in the expected location.";
+        ContinueButton.IsEnabled = _selectedGame.HasGameExecutable;
     }
 
     private void Rescan_Click(object sender, RoutedEventArgs e) => ScanInstallations();
 
     private void Continue_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedGame is null || !_selectedGame.IsInstalled)
+        if (_selectedGame is null || !_selectedGame.HasGameExecutable)
             return;
 
         MessageBox.Show(
-            $"{_selectedGame.GameName} folder selected at:{Environment.NewLine}{_selectedGame.InstallPath}{Environment.NewLine}{Environment.NewLine}SpaceRP has only confirmed that this directory exists. Executable validation, game launch, and server connection are future milestones.",
-            "SpaceRP · Game folder selected",
+            $"{_selectedGame.GameName} executable was found at:{Environment.NewLine}{_selectedGame.ExecutablePath}{Environment.NewLine}{Environment.NewLine}This check confirms that the expected executable file exists. SpaceRP has not verified file integrity or launched the game yet.",
+            "SpaceRP · Installation validated",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
     }

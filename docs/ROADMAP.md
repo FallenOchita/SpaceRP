@@ -15,9 +15,11 @@
 - [x] Create the initial Windows launcher shell.
 - [x] Add SE1 / SE2 selection as the first player-facing screen.
 - [x] Discover Steam libraries and read each game's app manifest.
-- [ ] Add manual installation folder selection and deeper executable validation.
+- [x] Add manual installation folder selection.
+- [x] Check for each game's expected Windows executable before enabling Continue.
 - [ ] Secure Steam account linking.
 - [ ] Add connection handoff to the selected game's SpaceRP service.
+- [ ] Launch the selected game through Steam after account/session handoff is implemented.
 - [ ] Add original app icon, signed updater, and branded loading/error screens.
 
 ## Milestone 3 — Game integrations
