@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../SpaceRP.Contracts/SpaceRP.Contracts.csproj" />
+  </ItemGroup>
+</Project>
