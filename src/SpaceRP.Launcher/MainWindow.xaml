@@ -1,0 +1,90 @@
+<Window x:Class="SpaceRP.Launcher.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SpaceRP Launcher" Height="650" Width="1000"
+        MinHeight="600" MinWidth="850"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}"
+        Foreground="#F2F6F8">
+    <Grid Margin="34">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,8,0,34">
+            <TextBlock Text="SPACERP" FontSize="34" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" />
+            <TextBlock Text="YOUR UNIVERSE. YOUR COMMUNITY." Margin="2,5,0,0"
+                       FontSize="12" Foreground="#9FB2BE" CharacterSpacing="180"/>
+            <TextBlock Text="Choose your game" FontSize="26" FontWeight="SemiBold" Margin="0,28,0,0"/>
+            <TextBlock Text="Select an edition to check its installation and continue to SpaceRP."
+                       FontSize="14" Foreground="#AFC0C9" Margin="0,7,0,0"/>
+        </StackPanel>
+
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="24"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Grid.Column="0" Background="{StaticResource PanelBrush}" CornerRadius="14"
+                    BorderBrush="#304653" BorderThickness="1" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="01 / CLASSIC" Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="Bold"/>
+                    <TextBlock Text="SPACE ENGINEERS" FontSize="25" FontWeight="Bold" Margin="0,18,0,8"/>
+                    <TextBlock Text="Build, explore, and create in the original sandbox universe."
+                               TextWrapping="Wrap" Foreground="#B6C5CC" FontSize="14" MinHeight="48"/>
+                    <Border Background="#111C24" CornerRadius="8" Padding="12" Margin="0,24,0,18">
+                        <StackPanel>
+                            <TextBlock Text="INSTALLATION STATUS" FontSize="10" Foreground="#8FA5B1" FontWeight="Bold"/>
+                            <TextBlock x:Name="Se1Status" Text="Checking Steam libraries..."
+                                       FontSize="13" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                    <Button Content="SELECT SPACE ENGINEERS" Height="44" Click="SelectSe1_Click"
+                            Background="{StaticResource AccentBrush}" Foreground="#08191B"
+                            FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                </StackPanel>
+            </Border>
+
+            <Border Grid.Column="2" Background="{StaticResource PanelBrush}" CornerRadius="14"
+                    BorderBrush="#304653" BorderThickness="1" Padding="24">
+                <StackPanel>
+                    <TextBlock Text="02 / NEXT GENERATION" Foreground="{StaticResource AccentBrush}" FontSize="11" FontWeight="Bold"/>
+                    <TextBlock Text="SPACE ENGINEERS 2" FontSize="25" FontWeight="Bold" Margin="0,18,0,8"/>
+                    <TextBlock Text="Explore the next chapter of engineering and discovery."
+                               TextWrapping="Wrap" Foreground="#B6C5CC" FontSize="14" MinHeight="48"/>
+                    <Border Background="#111C24" CornerRadius="8" Padding="12" Margin="0,24,0,18">
+                        <StackPanel>
+                            <TextBlock Text="INSTALLATION STATUS" FontSize="10" Foreground="#8FA5B1" FontWeight="Bold"/>
+                            <TextBlock x:Name="Se2Status" Text="Checking Steam libraries..."
+                                       FontSize="13" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Border>
+                    <Button Content="SELECT SPACE ENGINEERS 2" Height="44" Click="SelectSe2_Click"
+                            Background="{StaticResource AccentBrush}" Foreground="#08191B"
+                            FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <DockPanel Grid.Row="2" Margin="0,24,0,0" LastChildFill="False">
+            <StackPanel DockPanel.Dock="Left">
+                <TextBlock x:Name="SelectionStatus" Text="No game selected" FontSize="13" FontWeight="SemiBold"/>
+                <TextBlock x:Name="InstallPathStatus" Text="Select a game above to continue."
+                           FontSize="11" Foreground="#8FA5B1" Margin="0,4,0,0"/>
+            </StackPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal">
+                <Button Content="RESCAN" Width="100" Height="42" Margin="0,0,10,0"
+                        Click="Rescan_Click" Background="#263A46" Foreground="#F2F6F8"
+                        BorderThickness="0" Cursor="Hand"/>
+                <Button x:Name="ContinueButton" Content="CONTINUE" Width="150" Height="42"
+                        IsEnabled="False" Click="Continue_Click"
+                        Background="{StaticResource AccentBrush}" Foreground="#08191B"
+                        FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+            </StackPanel>
+        </DockPanel>
+    </Grid>
+</Window>

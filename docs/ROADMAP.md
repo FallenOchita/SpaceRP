@@ -3,7 +3,7 @@
 ## Milestone 0 — Repository foundation
 - [x] Establish a clean repository and MIT license.
 - [x] Separate shared contracts, server host, and SE1/SE2 adapter projects.
-- [ ] Verify CI build on GitHub Actions.
+- [x] Verify the foundation CI build on GitHub Actions.
 
 ## Milestone 1 — Platform service
 - [ ] Configuration and structured logging.
@@ -12,11 +12,13 @@
 - [ ] Service deployment and health monitoring for an external host.
 
 ## Milestone 2 — Launcher
-- [ ] Original SpaceRP branding, icon, and loading/error screens.
-- [ ] SE1 / SE2 selection as the first player-facing screen.
-- [ ] Steam library discovery and installation validation.
+- [x] Create the initial Windows launcher shell.
+- [x] Add SE1 / SE2 selection as the first player-facing screen.
+- [x] Discover Steam libraries and read each game's app manifest.
+- [ ] Add manual installation folder selection and deeper executable validation.
 - [ ] Secure Steam account linking.
-- [ ] Connection handoff to the selected game's SpaceRP service.
+- [ ] Add connection handoff to the selected game's SpaceRP service.
+- [ ] Add original app icon, signed updater, and branded loading/error screens.
 
 ## Milestone 3 — Game integrations
 - [ ] Verify supported SE1 API and dedicated-server integration.
