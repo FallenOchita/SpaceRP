@@ -33,7 +33,7 @@ public sealed partial class SteamOpenIdService(IHttpClientFactory httpClientFact
         _pendingStates[state] = DateTimeOffset.UtcNow;
 
         var returnTo = QueryHelpers.AddQueryString(callback.ToString(), "state", state);
-        var values = new Dictionary<string, string>
+        var values = new Dictionary<string, string?>
         {
             ["openid.ns"] = OpenIdNamespace,
             ["openid.mode"] = "checkid_setup",
