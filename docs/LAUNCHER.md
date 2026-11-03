@@ -1,14 +1,17 @@
 # SpaceRP Windows launcher
 
-The first launcher milestone adds a Windows WPF shell with SE1 / SE2 selection and Steam library discovery.
+The launcher milestone provides a Windows WPF shell with SE1 / SE2 selection, Steam library discovery, and manual game-folder selection.
 
-## Detection behavior
+## Detection and selection behavior
 
 - Reads common Steam install locations from the current-user and local-machine registry.
 - Checks the default Steam library and additional libraries listed in `steamapps/libraryfolders.vdf`.
 - Uses the Steam app manifests to locate each game independently.
-- Does not treat a directory alone as proof of a valid or launchable installation.
-- Does not sign in to Steam, verify ownership, launch a game, or connect to a SpaceRP server yet.
+- Provides a folder picker for installations that Steam discovery did not find.
+- Manual selection verifies that the chosen directory exists and records it for the current launcher session.
+- A selected directory is not proof that the game files are complete or that the game can launch.
+- Manual selections are session-only; pressing **Rescan** replaces them with fresh Steam discovery results.
+- Does not sign in to Steam, verify ownership, validate game executables, launch a game, or connect to a SpaceRP server yet.
 
 Steam application IDs used by the detector:
 - Space Engineers: `244850`

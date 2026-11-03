@@ -1,4 +1,6 @@
+using System.IO;
 using System.Windows;
+using Microsoft.Win32;
 using SpaceRP.Launcher.Models;
 using SpaceRP.Launcher.Services;
 
@@ -41,17 +43,62 @@ public partial class MainWindow : Window
 
         target.Text = installation?.IsInstalled == true
             ? "Installed · Ready to select"
-            : "Not detected · Check Steam installation";
+            : "Not detected · Browse for the game folder";
     }
 
     private void SelectSe1_Click(object sender, RoutedEventArgs e) => SelectGame("Space Engineers");
 
     private void SelectSe2_Click(object sender, RoutedEventArgs e) => SelectGame("Space Engineers 2");
 
+    private void BrowseSe1_Click(object sender, RoutedEventArgs e) => BrowseForGameFolder("Space Engineers");
+
+    private void BrowseSe2_Click(object sender, RoutedEventArgs e) => BrowseForGameFolder("Space Engineers 2");
+
     private void SelectGame(string gameName)
     {
         _selectedGame = _installations.FirstOrDefault(
             item => string.Equals(item.GameName, gameName, StringComparison.Ordinal));
+        UpdateSelection();
+    }
+
+    private void BrowseForGameFolder(string gameName)
+    {
+        var existing = _installations.FirstOrDefault(
+            item => string.Equals(item.GameName, gameName, StringComparison.Ordinal));
+
+        var dialog = new OpenFolderDialog
+        {
+            Title = $"Select the {gameName} installation folder",
+            Multiselect = false,
+            InitialDirectory = existing?.IsInstalled == true && Directory.Exists(existing.InstallPath)
+                ? existing.InstallPath
+                : Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+        };
+
+        if (dialog.ShowDialog(this) != true)
+            return;
+
+        var selectedPath = Path.GetFullPath(dialog.FolderName);
+        if (!Directory.Exists(selectedPath))
+        {
+            MessageBox.Show(
+                "The selected folder does not exist. Choose the game's installation folder.",
+                "SpaceRP · Invalid folder",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        var appId = gameName == "Space Engineers" ? 244850u : 1133870u;
+        var manualInstallation = new GameInstallation(gameName, appId, selectedPath, true);
+        _installations = _installations
+            .Where(item => !string.Equals(item.GameName, gameName, StringComparison.Ordinal))
+            .Append(manualInstallation)
+            .ToArray();
+
+        UpdateGameStatus("Space Engineers", Se1Status);
+        UpdateGameStatus("Space Engineers 2", Se2Status);
+        _selectedGame = manualInstallation;
         UpdateSelection();
     }
 
@@ -80,8 +127,8 @@ public partial class MainWindow : Window
             return;
 
         MessageBox.Show(
-            $"{_selectedGame.GameName} was detected at:{Environment.NewLine}{_selectedGame.InstallPath}{Environment.NewLine}{Environment.NewLine}The SpaceRP connection flow is the next launcher milestone.",
-            "SpaceRP · Installation detected",
+            $"{_selectedGame.GameName} folder selected at:{Environment.NewLine}{_selectedGame.InstallPath}{Environment.NewLine}{Environment.NewLine}SpaceRP has only confirmed that this directory exists. Executable validation, game launch, and server connection are future milestones.",
+            "SpaceRP · Game folder selected",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
     }
