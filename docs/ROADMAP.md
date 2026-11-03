@@ -17,6 +17,7 @@
 - [x] Discover Steam libraries and read each game's app manifest.
 - [x] Add manual installation folder selection.
 - [x] Check for each game's expected Windows executable before enabling Continue.
+- [x] Persist manually selected game folders between launcher sessions.
 - [ ] Secure Steam account linking.
 - [ ] Add connection handoff to the selected game's SpaceRP service.
 - [ ] Launch the selected game through Steam after account/session handoff is implemented.

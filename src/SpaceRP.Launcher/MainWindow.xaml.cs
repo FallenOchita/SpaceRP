@@ -9,6 +9,7 @@ namespace SpaceRP.Launcher;
 public partial class MainWindow : Window
 {
     private readonly SteamLibraryDiscovery _discovery = new();
+    private readonly LauncherSettingsStore _settingsStore = new();
     private IReadOnlyList<GameInstallation> _installations = [];
     private GameInstallation? _selectedGame;
 
@@ -22,7 +23,13 @@ public partial class MainWindow : Window
     {
         try
         {
-            _installations = _discovery.FindInstallations();
+            var discovered = _discovery.FindInstallations();
+            var savedPaths = _settingsStore.LoadManualInstallPaths();
+
+            _installations = discovered
+                .Select(installation => ApplySavedPath(installation, savedPaths))
+                .ToArray();
+
             UpdateGameStatus("Space Engineers", Se1Status);
             UpdateGameStatus("Space Engineers 2", Se2Status);
         }
@@ -34,6 +41,29 @@ public partial class MainWindow : Window
         }
 
         UpdateSelection();
+    }
+
+    private static GameInstallation ApplySavedPath(
+        GameInstallation discovered,
+        IReadOnlyDictionary<uint, string> savedPaths)
+    {
+        if (!savedPaths.TryGetValue(discovered.SteamAppId, out var savedPath) ||
+            !Directory.Exists(savedPath))
+        {
+            return discovered;
+        }
+
+        var executablePath = GameInstallationValidator.FindGameExecutable(
+            discovered.GameName,
+            savedPath);
+
+        return discovered with
+        {
+            InstallPath = Path.GetFullPath(savedPath),
+            IsInstalled = true,
+            ExecutablePath = executablePath ?? string.Empty,
+            HasGameExecutable = executablePath is not null
+        };
     }
 
     private void UpdateGameStatus(string gameName, System.Windows.Controls.TextBlock target)
@@ -100,10 +130,25 @@ public partial class MainWindow : Window
             true,
             executablePath ?? string.Empty,
             executablePath is not null);
+
         _installations = _installations
             .Where(item => !string.Equals(item.GameName, gameName, StringComparison.Ordinal))
             .Append(manualInstallation)
             .ToArray();
+
+        try
+        {
+            _settingsStore.SaveManualInstallPath(appId, selectedPath);
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException or ArgumentException or InvalidOperationException)
+        {
+            MessageBox.Show(
+                $"The folder is selected for this session, but SpaceRP could not save it for next time.{Environment.NewLine}{exception.Message}",
+                "SpaceRP · Settings could not be saved",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+        }
 
         UpdateGameStatus("Space Engineers", Se1Status);
         UpdateGameStatus("Space Engineers 2", Se2Status);
