@@ -16,7 +16,7 @@
         <StackPanel Grid.Row="0" Margin="0,8,0,34">
             <TextBlock Text="SPACERP" FontSize="34" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" />
             <TextBlock Text="YOUR UNIVERSE. YOUR COMMUNITY." Margin="2,5,0,0"
-                       FontSize="12" Foreground="#9FB2BE" CharacterSpacing="180"/>
+                       FontSize="12" Foreground="#9FB2BE" />
             <TextBlock Text="Choose your game" FontSize="26" FontWeight="SemiBold" Margin="0,28,0,0"/>
             <TextBlock Text="Select an edition to check its installation and continue to SpaceRP."
                        FontSize="14" Foreground="#AFC0C9" Margin="0,7,0,0"/>
