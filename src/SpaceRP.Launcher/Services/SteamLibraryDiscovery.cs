@@ -64,7 +64,7 @@ public sealed class SteamLibraryDiscovery
                 continue;
 
             var contents = File.ReadAllText(libraryFile);
-            foreach (Match match in Regex.Matches(contents, "\\"path\\"\\s*\\"([^\\"]+)\\""))
+            foreach (Match match in Regex.Matches(contents, @"""path""\s*""([^""]+)"""))
             {
                 var path = match.Groups[1].Value.Replace(@"\\", @"\");
                 if (Directory.Exists(path))
@@ -95,7 +95,7 @@ public sealed class SteamLibraryDiscovery
             return null;
 
         var contents = File.ReadAllText(manifest);
-        var installDir = Regex.Match(contents, "\\"installdir\\"\\s*\\"([^\\"]+)\\"");
+        var installDir = Regex.Match(contents, @"""installdir""\s*""([^""]+)""");
         var folder = installDir.Success ? installDir.Groups[1].Value : fallbackFolder;
         var installPath = Path.Combine(steamApps, "common", folder);
 
