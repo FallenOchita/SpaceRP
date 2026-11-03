@@ -4,4 +4,6 @@ public sealed record GameInstallation(
     string GameName,
     uint SteamAppId,
     string InstallPath,
-    bool IsInstalled);
+    bool IsInstalled,
+    string ExecutablePath,
+    bool HasGameExecutable);
