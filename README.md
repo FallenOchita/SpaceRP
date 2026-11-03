@@ -20,22 +20,23 @@ The project is being developed from the ground up. It does not depend on Nexus o
 | --- | --- |
 | `src/SpaceRP.Contracts` | Shared, game-agnostic contracts and data types |
 | `src/SpaceRP.Server` | Initial ASP.NET Core service host |
+| `src/SpaceRP.Launcher` | Windows WPF player launcher |
 | `src/SpaceRP.GameAdapters.Abstractions` | Contracts implemented by game-specific adapters |
 | `src/SpaceRP.GameAdapters.SE1` | SE1 adapter boundary |
 | `src/SpaceRP.GameAdapters.SE2` | SE2 adapter boundary |
-| `docs/` | Architecture and delivery roadmap |
+| `docs/` | Architecture, launcher behavior, and delivery roadmap |
 
 ## Build
 
-Requirements: .NET 8 SDK.
+Requirements: .NET 8 SDK and Windows for running the launcher.
 
-```bash
+```powershell
 dotnet restore SpaceRP.sln
-dotnet build SpaceRP.sln --configuration Release --no-restore
-dotnet run --project src/SpaceRP.Server
+dotnet build SpaceRP.sln --configuration Release
+dotnet run --project src/SpaceRP.Launcher
 ```
 
-The initial service exposes `GET /health` and `GET /api/v1/platform`. These are foundation endpoints, not a complete multiplayer backend.
+The server exposes initial `GET /health` and `GET /api/v1/platform` endpoints. These are foundation endpoints, not a complete multiplayer backend.
 
 ## Development principles
 
@@ -46,6 +47,6 @@ The initial service exposes `GET /health` and `GET /api/v1/platform`. These are 
 5. Treat scripts and plugins as untrusted code. Runtime isolation, permissions, resource limits, and auditability are release requirements.
 6. Keep secrets, signing keys, and production credentials out of source control.
 
-## Status
+## Current status
 
-This repository currently contains the first compilable architecture scaffold. Steam linking, full game detection, launcher UI, updater, persistent accounts, server discovery, game adapters, and scripting engines are planned work and are not implemented yet.
+The first Windows launcher shell now provides SE1 / SE2 selection and Steam library installation discovery. It does not yet perform Steam sign-in, verify ownership, launch either game, or connect to a SpaceRP server. The signed updater, persistent accounts, full game adapters, and scripting engines remain planned work.

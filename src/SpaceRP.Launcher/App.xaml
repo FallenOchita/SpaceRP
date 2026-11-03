@@ -1,0 +1,13 @@
+<Application x:Class="SpaceRP.Launcher.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <Color x:Key="SpaceBackground">#101820</Color>
+        <Color x:Key="SpacePanel">#192631</Color>
+        <Color x:Key="SpaceAccent">#45D6C5</Color>
+        <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource SpaceBackground}" />
+        <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource SpacePanel}" />
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource SpaceAccent}" />
+    </Application.Resources>
+</Application>
