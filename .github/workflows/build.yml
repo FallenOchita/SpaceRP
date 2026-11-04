@@ -26,3 +26,6 @@ jobs:
 
       - name: Build
         run: dotnet build SpaceRP.sln --configuration Release --no-restore
+
+      - name: Run tests
+        run: dotnet test SpaceRP.sln --configuration Release --no-build
