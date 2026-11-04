@@ -18,7 +18,8 @@
 - [x] Add manual installation folder selection.
 - [x] Check for each game's expected Windows executable before enabling Continue.
 - [x] Persist manually selected game folders between launcher sessions.
-- [ ] Secure Steam account linking.
+- [x] Add Steam OpenID identity verification (session issuance remains outstanding).
+- [ ] Complete secure Steam account linking with server-issued sessions.
 - [ ] Add connection handoff to the selected game's SpaceRP service.
 - [ ] Launch the selected game through Steam after account/session handoff is implemented.
 - [ ] Add original app icon, signed updater, and branded loading/error screens.
