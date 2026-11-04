@@ -7,8 +7,9 @@
 
 ## Milestone 1 — Platform service
 - [ ] Configuration and structured logging.
-- [ ] Persistent account and server registry.
-- [ ] Authentication/session model and API versioning.
+- [x] Persistent Steam-linked player accounts and session storage (SQLite, single-host deployment).
+- [ ] Persistent server registry.
+- [ ] Authentication/session model and API versioning hardening.
 - [ ] Service deployment and health monitoring for an external host.
 
 ## Milestone 2 — Launcher
@@ -18,8 +19,9 @@
 - [x] Add manual installation folder selection.
 - [x] Check for each game's expected Windows executable before enabling Continue.
 - [x] Persist manually selected game folders between launcher sessions.
-- [x] Add Steam OpenID identity verification (session issuance remains outstanding).
-- [ ] Complete secure Steam account linking with server-issued sessions.
+- [x] Add Steam OpenID identity verification.
+- [x] Create/retrieve persistent accounts and issue revocable, expiring server-side sessions.
+- [ ] Implement secure desktop launcher sign-in and session handoff.
 - [ ] Add connection handoff to the selected game's SpaceRP service.
 - [ ] Launch the selected game through Steam after account/session handoff is implemented.
 - [ ] Add original app icon, signed updater, and branded loading/error screens.
