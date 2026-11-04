@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Configuration;
 using SpaceRP.Server.Accounts;
+using Xunit;
 
 namespace SpaceRP.Server.Tests;
 
