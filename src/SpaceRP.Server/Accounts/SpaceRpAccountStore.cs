@@ -1,4 +1,3 @@
-using System.Data;
 using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.WebUtilities;
@@ -125,6 +124,18 @@ public sealed class SpaceRpAccountStore
                 reader.GetString(1),
                 DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(2)),
                 DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(3)));
+        }
+
+        await using (var cleanup = connection.CreateCommand())
+        {
+            cleanup.Transaction = transaction;
+            cleanup.CommandText = """
+                DELETE FROM sessions
+                WHERE expires_at < $cutoff
+                   OR (revoked_at IS NOT NULL AND revoked_at < $cutoff);
+                """;
+            cleanup.Parameters.AddWithValue("$cutoff", now.AddDays(-30).ToUnixTimeSeconds());
+            await cleanup.ExecuteNonQueryAsync(cancellationToken);
         }
 
         await using (var insertSession = connection.CreateCommand())
