@@ -50,4 +50,6 @@ The server now exposes a device-authorization flow so a desktop launcher can sig
 
 The database stores only a SHA-256 hash of the device code. The raw device code is returned only when it is created. User codes are not credentials: approval still requires a valid, authenticated browser session. Device authorization records expire after ten minutes and a successful poll consumes the authorization so it cannot issue a second token.
 
-The desktop client integration, secure Windows token storage (DPAPI), polling backoff, and sign-in UX are the next launcher milestone. Do not store bearer tokens in plain-text launcher settings or logs.
+The Windows desktop launcher now has a sign-in panel and device-flow client. It requests a device code, opens the same-origin verification page in the system browser, polls until approval or expiry, and stores the returned bearer token using Windows DPAPI with CurrentUser scope. The server address is configurable in the launcher UI. The launcher does not persist the token in its JSON settings and does not log it.
+
+The launcher currently reports the locally stored session state; server-side validation of a saved session on startup and a dedicated sign-out/revocation control remain follow-up work. Do not store bearer tokens in plain-text launcher settings or logs.
