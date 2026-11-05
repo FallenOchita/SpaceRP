@@ -210,4 +210,32 @@ public sealed class SpaceRpAccountStore
         command.Parameters.Add("$tokenHash", SqliteType.Blob).Value = tokenHash;
         await command.ExecuteNonQueryAsync(cancellationToken);
     }
+
+    public async Task<AccountProfile?> FindAccountByIdAsync(
+        Guid accountId,
+        CancellationToken cancellationToken = default)
+    {
+        if (accountId == Guid.Empty)
+            return null;
+
+        await using var connection = new SqliteConnection(_connectionString);
+        await connection.OpenAsync(cancellationToken);
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT account_id, steam_id64, created_at, last_login_at
+            FROM accounts
+            WHERE account_id = $accountId
+            LIMIT 1;
+            """;
+        command.Parameters.AddWithValue("$accountId", accountId.ToString("D"));
+
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        return await reader.ReadAsync(cancellationToken)
+            ? new AccountProfile(
+                Guid.Parse(reader.GetString(0)),
+                reader.GetString(1),
+                DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(2)),
+                DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64(3)))
+            : null;
+    }
 }
