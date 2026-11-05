@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using SpaceRP.Contracts;
 using SpaceRP.Server.Accounts;
 using SpaceRP.Server.Authentication;
@@ -249,7 +250,7 @@ static string? GetSessionToken(HttpRequest request)
         : null;
 }
 
-public sealed record DeviceTokenRequest(string DeviceCode);
+public sealed record DeviceTokenRequest([property: JsonPropertyName("device_code")] string DeviceCode);
 
 public partial class Program
 {
