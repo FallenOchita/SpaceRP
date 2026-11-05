@@ -1,4 +1,7 @@
+using System.Diagnostics;
+using System.Security.Cryptography;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using Microsoft.Win32;
 using SpaceRP.Launcher.Models;
@@ -8,15 +11,158 @@ namespace SpaceRP.Launcher;
 
 public partial class MainWindow : Window
 {
+    private static readonly HttpClient AuthenticationHttpClient = new()
+    {
+        Timeout = TimeSpan.FromSeconds(20)
+    };
+
     private readonly SteamLibraryDiscovery _discovery = new();
     private readonly LauncherSettingsStore _settingsStore = new();
+    private readonly DeviceAuthorizationClient _deviceAuthorization =
+        new(AuthenticationHttpClient);
+    private readonly ProtectedSessionStore _sessionStore = new();
+    private CancellationTokenSource? _signInCancellation;
     private IReadOnlyList<GameInstallation> _installations = [];
     private GameInstallation? _selectedGame;
 
     public MainWindow()
     {
         InitializeComponent();
-        Loaded += (_, _) => ScanInstallations();
+        Loaded += (_, _) =>
+        {
+            ScanInstallations();
+            RefreshAccountStatus();
+        };
+        Closed += (_, _) => _signInCancellation?.Cancel();
+    }
+
+    private void RefreshAccountStatus()
+    {
+        try
+        {
+            var savedSession = _sessionStore.Load();
+            AccountStatus.Text = string.IsNullOrEmpty(savedSession)
+                ? "Not signed in"
+                : "A protected session is stored on this Windows account";
+            AccountHint.Text = string.IsNullOrEmpty(savedSession)
+                ? "Sign in through Steam in your browser to link this launcher."
+                : "The session is encrypted with Windows DPAPI. Sign in again if it has expired.";
+        }
+        catch (Exception exception) when (
+            exception is IOException or UnauthorizedAccessException or CryptographicException)
+        {
+            AccountStatus.Text = "Unable to read the saved session";
+            AccountHint.Text = exception.Message;
+        }
+    }
+
+    private async void SignIn_Click(object sender, RoutedEventArgs e)
+    {
+        if (_signInCancellation is not null)
+            return;
+
+        if (!Uri.TryCreate(ServerUrlBox.Text.Trim(), UriKind.Absolute, out var serverUri) ||
+            (serverUri.Scheme != Uri.UriSchemeHttps &&
+             !(serverUri.IsLoopback && serverUri.Scheme == Uri.UriSchemeHttp)) ||
+            !string.IsNullOrEmpty(serverUri.UserInfo) ||
+            !string.IsNullOrEmpty(serverUri.Query) ||
+            !string.IsNullOrEmpty(serverUri.Fragment))
+        {
+            MessageBox.Show(
+                "Enter a valid HTTPS SpaceRP server address. HTTP is allowed only for localhost development.",
+                "SpaceRP · Invalid server address",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return;
+        }
+
+        serverUri = new Uri(serverUri.GetLeftPart(UriPartial.Authority) + "/");
+        _signInCancellation = new CancellationTokenSource();
+        SignInButton.IsEnabled = false;
+        ServerUrlBox.IsEnabled = false;
+
+        try
+        {
+            AccountStatus.Text = "Requesting a secure sign-in code...";
+            AccountHint.Text = "SpaceRP will open your browser. Your Steam password is entered only on Steam.";
+
+            var cancellationToken = _signInCancellation.Token;
+            var device = await _deviceAuthorization.RequestDeviceCodeAsync(
+                serverUri, cancellationToken);
+
+            if (string.IsNullOrWhiteSpace(device.DeviceCode) ||
+                string.IsNullOrWhiteSpace(device.UserCode) ||
+                !Uri.TryCreate(device.VerificationUri, UriKind.RelativeOrAbsolute, out var verificationUri))
+            {
+                throw new InvalidOperationException("The server returned an invalid device authorization response.");
+            }
+
+            verificationUri = verificationUri.IsAbsoluteUri
+                ? verificationUri
+                : new Uri(serverUri, verificationUri);
+
+            if (verificationUri.Scheme != Uri.UriSchemeHttps &&
+                !(verificationUri.IsLoopback && verificationUri.Scheme == Uri.UriSchemeHttp))
+            {
+                throw new InvalidOperationException("The verification page must use HTTPS (or localhost for development).");
+            }
+
+            if (!string.Equals(
+                    verificationUri.GetLeftPart(UriPartial.Authority),
+                    serverUri.GetLeftPart(UriPartial.Authority),
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The verification page must belong to the configured SpaceRP server.");
+            }
+
+            var separator = string.IsNullOrEmpty(verificationUri.Query) ? "?" : "&";
+            var browserUri = new Uri(
+                verificationUri + separator + "user_code=" + Uri.EscapeDataString(device.UserCode));
+
+            AccountStatus.Text = $"Enter code: {device.UserCode}";
+            AccountHint.Text = "Complete Steam sign-in and authorize this device in the browser. This window will wait for approval.";
+
+            Process.Start(new ProcessStartInfo(browserUri.ToString())
+            {
+                UseShellExecute = true
+            });
+
+            var expiresAt = DateTimeOffset.UtcNow.AddSeconds(
+                Math.Clamp(device.ExpiresIn, 1, 600));
+            var session = await _deviceAuthorization.PollForTokenAsync(
+                serverUri,
+                device.DeviceCode,
+                device.Interval,
+                expiresAt,
+                cancellationToken);
+
+            if (session is null || !string.Equals(
+                    session.TokenType, "Bearer", StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("The server did not return a supported session token.");
+            }
+
+            _sessionStore.Save(session.AccessToken);
+            AccountStatus.Text = "Signed in · Session protected";
+            AccountHint.Text = "Your SpaceRP session is encrypted for this Windows user.";
+        }
+        catch (OperationCanceledException)
+        {
+            AccountStatus.Text = "Sign-in cancelled";
+            AccountHint.Text = "You can start Steam sign-in again at any time.";
+        }
+        catch (Exception exception)
+        {
+            AccountStatus.Text = "Sign-in could not be completed";
+            AccountHint.Text = exception.Message;
+        }
+        finally
+        {
+            _signInCancellation.Dispose();
+            _signInCancellation = null;
+            SignInButton.IsEnabled = true;
+            ServerUrlBox.IsEnabled = true;
+        }
     }
 
     private void ScanInstallations()

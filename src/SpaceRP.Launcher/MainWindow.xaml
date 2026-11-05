@@ -17,7 +17,29 @@
             <TextBlock Text="SPACERP" FontSize="34" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" />
             <TextBlock Text="YOUR UNIVERSE. YOUR COMMUNITY." Margin="2,5,0,0"
                        FontSize="12" Foreground="#9FB2BE" />
-            <TextBlock Text="Choose your game" FontSize="26" FontWeight="SemiBold" Margin="0,28,0,0"/>
+            <Border Background="{StaticResource PanelBrush}" CornerRadius="9" Padding="12" Margin="0,18,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="SPACERP SERVER" FontSize="10" FontWeight="Bold" Foreground="#8FA5B1"/>
+                        <TextBox x:Name="ServerUrlBox" Text="https://localhost:5001" Margin="0,5,12,5"
+                                 Height="28" Padding="6,3" Background="#101820" Foreground="#F2F6F8"
+                                 BorderBrush="#405865" BorderThickness="1"/>
+                        <TextBlock Text="SPACERP ACCOUNT" FontSize="10" FontWeight="Bold" Foreground="#8FA5B1"/>
+                        <TextBlock x:Name="AccountStatus" Text="Not signed in" FontSize="13" Margin="0,4,0,0"/>
+                        <TextBlock x:Name="AccountHint" Text="Sign in through Steam in your browser to link this launcher."
+                                   FontSize="11" Foreground="#AFC0C9" Margin="0,3,12,0" TextWrapping="Wrap"/>
+                    </StackPanel>
+                    <Button x:Name="SignInButton" Grid.Column="1" Content="SIGN IN WITH STEAM"
+                            Width="190" Height="40" Click="SignIn_Click"
+                            Background="{StaticResource AccentBrush}" Foreground="#08191B"
+                            FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                </Grid>
+            </Border>
+            <TextBlock Text="Choose your game" FontSize="26" FontWeight="SemiBold" Margin="0,18,0,0"/>
             <TextBlock Text="Select an edition to check its installation and continue to SpaceRP."
                        FontSize="14" Foreground="#AFC0C9" Margin="0,7,0,0"/>
         </StackPanel>
