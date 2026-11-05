@@ -71,6 +71,45 @@ public sealed class DeviceAuthorizationClient(HttpClient httpClient)
 
         throw new TimeoutException("The device authorization code expired. Start sign-in again.");
     }
+
+    public async Task<JsonElement?> GetCurrentAccountAsync(
+        Uri serverBaseUri,
+        string accessToken,
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get, new Uri(serverBaseUri, "/api/v1/account/me"));
+        request.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+        if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            return null;
+
+        response.EnsureSuccessStatusCode();
+        using var document = await JsonDocument.ParseAsync(
+            await response.Content.ReadAsStreamAsync(cancellationToken),
+            cancellationToken: cancellationToken);
+
+        if (!document.RootElement.TryGetProperty("account", out var account))
+            throw new InvalidOperationException("The server account response did not contain an account.");
+
+        return account.Clone();
+    }
+
+    public async Task RevokeSessionAsync(
+        Uri serverBaseUri,
+        string accessToken,
+        CancellationToken cancellationToken)
+    {
+        using var request = new HttpRequestMessage(
+            HttpMethod.Post, new Uri(serverBaseUri, "/auth/steam/logout"));
+        request.Headers.Authorization =
+            new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", accessToken);
+
+        using var response = await httpClient.SendAsync(request, cancellationToken);
+        response.EnsureSuccessStatusCode();
+    }
 }
 
 public sealed record DeviceCodeResponse(
