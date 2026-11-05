@@ -64,8 +64,9 @@ public sealed class DeviceAuthorizationClient(HttpClient httpClient)
             if (error?.Error == "expired_token")
                 throw new TimeoutException("The device authorization code expired. Start sign-in again.");
 
+            var errorDescription = error?.Error ?? ((int)response.StatusCode).ToString();
             throw new HttpRequestException(
-                $"The server rejected device authorization ({error?.Error ?? (int)response.StatusCode}).");
+                $"The server rejected device authorization ({errorDescription}).");
         }
 
         throw new TimeoutException("The device authorization code expired. Start sign-in again.");
