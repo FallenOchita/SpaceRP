@@ -33,10 +33,16 @@
                         <TextBlock x:Name="AccountHint" Text="Sign in through Steam in your browser to link this launcher."
                                    FontSize="11" Foreground="#AFC0C9" Margin="0,3,12,0" TextWrapping="Wrap"/>
                     </StackPanel>
-                    <Button x:Name="SignInButton" Grid.Column="1" Content="SIGN IN WITH STEAM"
-                            Width="190" Height="40" Click="SignIn_Click"
-                            Background="{StaticResource AccentBrush}" Foreground="#08191B"
-                            FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <Button x:Name="SignInButton" Content="SIGN IN WITH STEAM"
+                                Width="190" Height="40" Click="SignIn_Click"
+                                Background="{StaticResource AccentBrush}" Foreground="#08191B"
+                                FontWeight="Bold" BorderThickness="0" Cursor="Hand"/>
+                        <Button x:Name="SignOutButton" Content="SIGN OUT / REVOKE SESSION"
+                                Width="190" Height="32" Margin="0,8,0,0" Click="SignOut_Click"
+                                IsEnabled="False" Background="#263A46" Foreground="#F2F6F8"
+                                BorderThickness="0" Cursor="Hand"/>
+                    </StackPanel>
                 </Grid>
             </Border>
             <TextBlock Text="Choose your game" FontSize="26" FontWeight="SemiBold" Margin="0,18,0,0"/>

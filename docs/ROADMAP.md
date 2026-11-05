@@ -23,6 +23,8 @@
 - [x] Create/retrieve persistent accounts and issue revocable, expiring server-side sessions.
 - [x] Add server-side device authorization and one-time bearer session exchange.
 - [x] Integrate launcher device authorization with Windows DPAPI session storage and polling backoff.
+- [x] Validate saved launcher sessions against the server on startup.
+- [x] Add launcher sign-out with server-side session revocation and local DPAPI cleanup.
 - [ ] Add connection handoff to the selected game's SpaceRP service.
 - [ ] Launch the selected game through Steam after account/session handoff is implemented.
 - [ ] Add original app icon, signed updater, and branded loading/error screens.

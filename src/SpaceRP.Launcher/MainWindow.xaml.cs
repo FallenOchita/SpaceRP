@@ -28,31 +28,127 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        Loaded += (_, _) =>
+        Loaded += async (_, _) =>
         {
             ScanInstallations();
-            RefreshAccountStatus();
+            await RefreshAccountStatusAsync();
         };
         Closed += (_, _) => _signInCancellation?.Cancel();
     }
 
-    private void RefreshAccountStatus()
+    private async Task RefreshAccountStatusAsync()
     {
         try
         {
             var savedSession = _sessionStore.Load();
-            AccountStatus.Text = string.IsNullOrEmpty(savedSession)
-                ? "Not signed in"
-                : "A protected session is stored on this Windows account";
-            AccountHint.Text = string.IsNullOrEmpty(savedSession)
-                ? "Sign in through Steam in your browser to link this launcher."
-                : "The session is encrypted with Windows DPAPI. Sign in again if it has expired.";
+            if (string.IsNullOrEmpty(savedSession))
+            {
+                SetSignedOutStatus("Sign in through Steam in your browser to link this launcher.");
+                return;
+            }
+
+            if (!TryGetServerUri(out var serverUri))
+            {
+                AccountStatus.Text = "Saved session needs verification";
+                AccountHint.Text = "Enter the SpaceRP server address used for this account, then restart the launcher.";
+                return;
+            }
+
+            AccountStatus.Text = "Verifying saved session...";
+            AccountHint.Text = "Checking your SpaceRP account with the configured server.";
+            var account = await _deviceAuthorization.GetCurrentAccountAsync(
+                serverUri, savedSession, CancellationToken.None);
+
+            if (account is null)
+            {
+                _sessionStore.Delete();
+                SetSignedOutStatus("Your saved session expired or was revoked. Sign in again.");
+                return;
+            }
+
+            var steamId = account.Value.TryGetProperty("steamId64", out var steamIdValue)
+                ? steamIdValue.GetString()
+                : null;
+            AccountStatus.Text = string.IsNullOrWhiteSpace(steamId)
+                ? "Signed in · Session verified"
+                : $"Signed in · Steam {steamId}";
+            AccountHint.Text = "Your saved session is valid with the SpaceRP server.";
+            SignOutButton.IsEnabled = true;
         }
         catch (Exception exception) when (
             exception is IOException or UnauthorizedAccessException or CryptographicException)
         {
             AccountStatus.Text = "Unable to read the saved session";
             AccountHint.Text = exception.Message;
+        }
+        catch (HttpRequestException)
+        {
+            AccountStatus.Text = "Session could not be verified";
+            AccountHint.Text = "The SpaceRP server could not be reached. Your protected session was kept.";
+        }
+        catch (TaskCanceledException)
+        {
+            AccountStatus.Text = "Session verification timed out";
+            AccountHint.Text = "Your protected session was kept. Check the server address and try again.";
+        }
+    }
+
+    private void SetSignedOutStatus(string hint)
+    {
+        AccountStatus.Text = "Not signed in";
+        AccountHint.Text = hint;
+        SignOutButton.IsEnabled = false;
+    }
+
+    private bool TryGetServerUri(out Uri serverUri)
+    {
+        serverUri = new Uri("https://localhost:5001/");
+        if (!Uri.TryCreate(ServerUrlBox.Text.Trim(), UriKind.Absolute, out var parsed) ||
+            (parsed.Scheme != Uri.UriSchemeHttps &&
+             !(parsed.IsLoopback && parsed.Scheme == Uri.UriSchemeHttp)) ||
+            !string.IsNullOrEmpty(parsed.UserInfo) ||
+            !string.IsNullOrEmpty(parsed.Query) ||
+            !string.IsNullOrEmpty(parsed.Fragment))
+        {
+            return false;
+        }
+
+        serverUri = new Uri(parsed.GetLeftPart(UriPartial.Authority) + "/");
+        return true;
+    }
+
+    private async void SignOut_Click(object sender, RoutedEventArgs e)
+    {
+        var savedSession = _sessionStore.Load();
+        if (string.IsNullOrWhiteSpace(savedSession))
+        {
+            SetSignedOutStatus("There is no saved session on this Windows account.");
+            return;
+        }
+
+        if (!TryGetServerUri(out var serverUri))
+        {
+            AccountStatus.Text = "Cannot revoke session";
+            AccountHint.Text = "Enter a valid HTTPS SpaceRP server address before signing out.";
+            return;
+        }
+
+        SignOutButton.IsEnabled = false;
+        AccountStatus.Text = "Revoking session...";
+        AccountHint.Text = "Contacting the SpaceRP server to invalidate this session.";
+        try
+        {
+            await _deviceAuthorization.RevokeSessionAsync(
+                serverUri, savedSession, CancellationToken.None);
+            _sessionStore.Delete();
+            SetSignedOutStatus("Your SpaceRP session was revoked and removed from this Windows account.");
+        }
+        catch (Exception exception) when (
+            exception is HttpRequestException or TaskCanceledException or IOException or UnauthorizedAccessException)
+        {
+            AccountStatus.Text = "Sign-out could not be completed";
+            AccountHint.Text = "The session was not removed locally because server revocation could not be confirmed. " + exception.Message;
+            SignOutButton.IsEnabled = true;
         }
     }
 
@@ -145,6 +241,7 @@ public partial class MainWindow : Window
             _sessionStore.Save(session.AccessToken);
             AccountStatus.Text = "Signed in · Session protected";
             AccountHint.Text = "Your SpaceRP session is encrypted for this Windows user.";
+            SignOutButton.IsEnabled = true;
         }
         catch (OperationCanceledException)
         {
