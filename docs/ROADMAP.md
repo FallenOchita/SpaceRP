@@ -21,7 +21,7 @@
 - [x] Persist manually selected game folders between launcher sessions.
 - [x] Add Steam OpenID identity verification.
 - [x] Create/retrieve persistent accounts and issue revocable, expiring server-side sessions.
-- [ ] Implement secure desktop launcher sign-in and session handoff.
+- [x] Add server-side device authorization and one-time bearer session exchange.\n- [ ] Integrate device authorization into the desktop launcher with DPAPI token storage and polling backoff.
 - [ ] Add connection handoff to the selected game's SpaceRP service.
 - [ ] Launch the selected game through Steam after account/session handoff is implemented.
 - [ ] Add original app icon, signed updater, and branded loading/error screens.
