@@ -24,6 +24,10 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
+                        <TextBlock Text="SPACERP SERVER" FontSize="10" FontWeight="Bold" Foreground="#8FA5B1"/>
+                        <TextBox x:Name="ServerUrlBox" Text="https://localhost:5001" Margin="0,5,12,5"
+                                 Height="28" Padding="6,3" Background="#101820" Foreground="#F2F6F8"
+                                 BorderBrush="#405865" BorderThickness="1"/>
                         <TextBlock Text="SPACERP ACCOUNT" FontSize="10" FontWeight="Bold" Foreground="#8FA5B1"/>
                         <TextBlock x:Name="AccountStatus" Text="Not signed in" FontSize="13" Margin="0,4,0,0"/>
                         <TextBlock x:Name="AccountHint" Text="Sign in through Steam in your browser to link this launcher."
