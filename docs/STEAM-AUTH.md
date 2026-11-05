@@ -37,3 +37,17 @@ SQLite provides durable account and session storage for a single server host. Ba
 Steam OpenID pending-state and nonce replay tracking are still process-local. Keep the authentication service single-instance until those short-lived values move to shared expiring storage. Multi-instance deployment also requires a shared database service and coordinated state storage.
 
 The launcher does not yet perform the desktop sign-in handoff or consume this cookie-based session. Game-server authorization, session refresh, account recovery, and administrative account management are separate future milestones.
+
+## Desktop launcher device authorization
+
+The server now exposes a device-authorization flow so a desktop launcher can sign in without reading browser cookies or asking the player for a Steam password.
+
+1. The launcher calls `POST /auth/device/code`. The response contains a one-time `device_code`, a short `user_code`, a verification URI, a 10-minute expiry, and a suggested 5-second polling interval.
+2. The player opens the verification URI in a browser. If needed, they sign in with Steam there, then submit the user code. The verification form requires the existing SpaceRP session cookie.
+3. The browser approval binds the pending device request to the authenticated account. User codes are normalized, expire, and can be approved only once.
+4. The launcher polls `POST /auth/device/token` with JSON `{ "device_code": "..." }`. A pending request returns `authorization_pending`; an approved request returns one bearer session token; expired, invalid, or consumed requests return an error.
+5. The launcher uses that opaque bearer token in the `Authorization: Bearer` header for authenticated API calls. The existing account endpoint accepts either the secure browser cookie or the bearer session.
+
+The database stores only a SHA-256 hash of the device code. The raw device code is returned only when it is created. User codes are not credentials: approval still requires a valid, authenticated browser session. Device authorization records expire after ten minutes and a successful poll consumes the authorization so it cannot issue a second token.
+
+The desktop client integration, secure Windows token storage (DPAPI), polling backoff, and sign-in UX are the next launcher milestone. Do not store bearer tokens in plain-text launcher settings or logs.
