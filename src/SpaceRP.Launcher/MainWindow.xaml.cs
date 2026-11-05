@@ -241,6 +241,7 @@ public partial class MainWindow : Window
             _sessionStore.Save(session.AccessToken);
             AccountStatus.Text = "Signed in · Session protected";
             AccountHint.Text = "Your SpaceRP session is encrypted for this Windows user.";
+            SignOutButton.IsEnabled = true;
         }
         catch (OperationCanceledException)
         {
